@@ -1,5 +1,7 @@
 # saas-promo-studio
 
+[![Watch Demo](https://img.shields.io/badge/▶%20Watch-Demo%20Video-6B41F8?style=for-the-badge)](https://github.com/anuragsingk/saas-promo-studio/blob/main/LaunchVideo.mp4)
+
 A Claude Code skill that autonomously builds a **complete AI SaaS promo video production system** inside any existing web application repository.
 
 One command. Full pipeline. Cinematic output.
