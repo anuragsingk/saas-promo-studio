@@ -6,19 +6,44 @@ One command. Full pipeline. Cinematic output.
 
 ---
 
-## Install in one command
+## Before you start — install these two things
 
-**Mac / Linux**
+> **New to this? Start here.** You only do this once.
+
+### 1. Node.js (free)
+Download the **LTS** version from **[nodejs.org](https://nodejs.org)** and install it.
+Verify it worked: open a terminal and type `node -v` — you should see a version number.
+
+### 2. Claude Code (free)
+This skill runs inside Claude Code — Anthropic's AI coding tool.
+
+```bash
+# Mac / Linux — paste this in your terminal:
+curl -fsSL https://claude.ai/install.sh | sh
+
+# Windows — download the installer from:
+# https://claude.ai/claude-code
+```
+
+After installing, type `claude` in your terminal to open it.
+
+---
+
+## Install the skill — one command
+
+Once Claude Code is installed, run this once to add the skill:
+
+**Mac / Linux** — paste in Terminal:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/anuragsingk/saas-promo-studio/main/install.sh | bash
 ```
 
-**Windows (PowerShell)**
+**Windows** — paste in PowerShell:
 ```powershell
 irm https://raw.githubusercontent.com/anuragsingk/saas-promo-studio/main/install.ps1 | iex
 ```
 
-Then restart Claude Code and type `/saas-promo-studio` inside any SaaS project.
+Restart Claude Code → the skill is ready. No other installs needed at this point.
 
 ---
 
@@ -55,10 +80,14 @@ Drop this skill into Claude Code, open any SaaS project, and type `/saas-promo-s
 
 ## Requirements
 
-- Node.js 18+
-- Python 3.10+ (for Piper TTS / Whisper — optional)
-- FFmpeg (installed automatically by `install.sh` / `install.ps1`)
-- Claude Code CLI
+| Requirement | Why | Install |
+|-------------|-----|---------|
+| **Node.js 18+** | Runs the promo scripts and Remotion | [nodejs.org](https://nodejs.org) → click LTS |
+| **Claude Code** | The app this skill runs inside | [claude.ai/claude-code](https://claude.ai/claude-code) |
+| FFmpeg | Video compositing — **auto-installed** by our script | Nothing to do |
+| Python 3.10+ | Neural TTS + auto-subtitles — **optional** | [python.org](https://python.org) |
+
+**Minimum setup**: Node.js + Claude Code. Everything else is handled automatically or optional.
 
 ---
 
