@@ -6,6 +6,8 @@ A Claude Code skill that autonomously builds a **complete AI SaaS promo video pr
 
 One command. Full pipeline. Cinematic output.
 
+> **No API keys. No subscriptions. Runs fully offline.**
+
 ---
 
 ## Before you start — install these two things
@@ -53,13 +55,16 @@ Restart Claude Code → the skill is ready. No other installs needed at this poi
 
 Drop this skill into Claude Code, open any SaaS project, and type `/saas-promo-studio`. Claude will:
 
-1. **Analyse your app** — reads your codebase, identifies features, user flows, selling points, and brand colours
-2. **Build the entire video system** — generates every file from scratch inside a `promo/` folder
-3. **Record your UI** — Playwright screenshots and videos of your actual running app
-4. **Generate voiceovers** — Piper TTS (neural), macOS `say`, or Windows SAPI fallback
-5. **Auto-subtitle** — Whisper transcription → SRT → burned into video
-6. **Render cinematic video** — Remotion React compositions with spring animations
-7. **Export all social formats** — YouTube, TikTok, Instagram, Twitter via FFmpeg
+1. **Validate your environment** — checks Node.js, FFmpeg, Python, Playwright upfront and prints a clear status table. Fast-fails only if Node.js is missing; everything else degrades gracefully.
+2. **Analyse your app** — reads your codebase, identifies features, user flows, selling points, and brand colours
+3. **Auto-scan your brand** — extracts real hex colours from Tailwind config, CSS variables, design tokens; detects your logo file
+4. **Choose a narrative structure** — picks the best storytelling arc (Rage Hook, Transformation, Social Proof Storm, etc.) for your product type
+5. **Build the entire video system** — generates every file from scratch inside a `promo/` folder
+6. **Record your UI** — Playwright screenshots and videos of your actual running app
+7. **Generate voiceovers** — Piper TTS (neural) with per-scene emotion control, macOS `say`, or Windows SAPI fallback
+8. **Auto-subtitle** — Whisper transcription → SRT → burned into video
+9. **Render cinematic video** — Remotion React compositions with spring animations
+10. **Export all social formats** — YouTube, TikTok, Instagram, Twitter via FFmpeg
 
 **Output**: master MP4 + 4 platform-sized social variants, ready to post.
 
@@ -142,7 +147,11 @@ claude
 /saas-promo-studio
 ```
 
-Claude will analyse your repo and generate the entire `promo/` system.
+Claude will:
+- Run an **environment check** (prints a clear status table — know exactly what works)
+- **Auto-scan your brand** (extracts Tailwind colours, CSS variables, logo files)
+- **Pick a narrative structure** that matches your product type
+- Generate the entire `promo/` system
 
 ### 3. Configure your app URL
 
@@ -211,6 +220,13 @@ npm run promo -- --template=tiktok
 npm run promo -- --template=onboarding --output=my-walkthrough
 ```
 
+### Duration flag
+```bash
+npm run promo -- --duration=30   # 30-second video
+npm run promo -- --duration=60   # 60-second video (default for launch)
+npm run promo -- --duration=90   # 90-second video
+```
+
 ### Skip flags (for faster re-runs)
 ```bash
 npm run promo -- --skip-capture    # reuse existing screenshots
@@ -218,6 +234,44 @@ npm run promo -- --skip-voice      # reuse existing audio
 npm run promo -- --skip-render     # skip Remotion render
 npm run promo -- --no-social       # skip social format exports
 ```
+
+---
+
+## Narrative Story Structures
+
+One of this skill's most powerful features: Claude automatically picks the best **narrative arc** for your product, then writes all voiceover scripts, hook copy, and Remotion scene ordering to match.
+
+### The 7 Structures
+
+**THE RAGE HOOK** — *Best for: tools that fix genuinely painful workflows*
+> Frustration → Silence → Whisper → Reveal → CTA
+> Dark, cathartic pacing. "Enough." moment in the middle.
+
+**THE TRANSFORMATION** — *Best for: before/after tools, productivity apps*
+> Before (pain) → Pivot ("With [Product]:") → After (vivid side-by-side) → Proof stat → CTA
+> Split-screen contrast. Counter-up numbers as proof.
+
+**THE SOCIAL PROOF STORM** — *Best for: apps with users, reviews, or team adoption*
+> Hook stat → Rapid testimonial cuts → Silent demo → Numbers → "Join them."
+> Social momentum and FOMO. Testimonials speak for you.
+
+**THE WHISPER REVEAL** — *Best for: AI tools, automation, "magic" features*
+> Question → Magic activation → Output materialises → "One click." → CTA
+> Mysterious, wonder-building. Let the result do the talking.
+
+**THE PROBLEM AGITATOR** — *Best for: compliance, security, ops tools*
+> Scary stat → Agitate the risk → Solution protecting them → Reassurance → CTA
+> Alarming → tension → relief → safety.
+
+**THE FOUNDER STORY** — *Best for: indie SaaS, personal brand products*
+> Origin → Build montage → Community → Invitation → CTA
+> Authentic, humble, inspiring.
+
+**THE SPEED RUN** — *Best for: complex tools proving simplicity*
+> Bold claim → Live uncut demo with timer → Result on screen → "You just watched it." → CTA
+> Proof by doing. No hype — just the real thing.
+
+The chosen structure is recorded in `promo/ANALYSIS.md` and `promo/prompts/ad-scripts.md`.
 
 ---
 
@@ -268,7 +322,7 @@ Stripe / Arc inspired. Opening punch stat → social proof counter-up numbers �
 
 ```
 promo/
-├── ANALYSIS.md              ← auto-generated product analysis
+├── ANALYSIS.md              ← auto-generated product analysis + narrative structure
 ├── package.json
 ├── tsconfig.json
 ├── install.sh               ← Mac/Linux one-command installer
@@ -277,7 +331,7 @@ promo/
 ├── scripts/
 │   ├── analyze.ts           ← product name, tagline, features, hooks, colours
 │   ├── capture.ts           ← Playwright UI recorder (10 key screens)
-│   ├── voiceover.ts         ← Piper → say → SAPI → silent fallback
+│   ├── voiceover.ts         ← Piper → say → SAPI → silent (+ emotion per scene)
 │   ├── subtitles.ts         ← Whisper SRT → JSON timing
 │   ├── ffmpeg-pipeline.ts   ← composite + colour grade + social exports
 │   ├── render.ts            ← Remotion render runner
@@ -295,7 +349,7 @@ promo/
 │       ├── scenes/          ← Hero, UICapture, KineticText, CTA, Transition, FeatureShowcase
 │       └── motion/          ← cinematicSpring, particles, cursorHighlight, focusZoom, gradients
 ├── templates/               ← scene-by-scene breakdowns per template
-├── prompts/                 ← hooks, ad scripts, CTA copy, scene ideas
+├── prompts/                 ← hooks (all 7 structures), ad scripts, CTA copy, scene ideas
 └── output/
     ├── renders/             ← master videos
     └── social/              ← platform variants
@@ -317,6 +371,31 @@ PROMO_PASSWORD=yourpassword
 ```
 
 If `PROMO_APP_URL` is unreachable when you run `npm run promo`, capture is skipped gracefully — the system creates a placeholder manifest and renders with mock UI instead of crashing.
+
+---
+
+## Voiceover fallback chain
+
+The skill automatically selects the best available TTS engine **and controls emotion per scene**:
+
+| Priority | Engine | Quality | Requires |
+|----------|--------|---------|----------|
+| 1 | Piper TTS | Neural (best) | `pip install piper-tts` + model download |
+| 2 | macOS `say` | System voice | macOS only |
+| 3 | Windows SAPI | System voice | Windows built-in — zero install |
+| 4 | Silent placeholder | No audio | Always available |
+
+**Emotion control** — each scene gets a delivery style:
+| Emotion | Piper speed | SAPI rate | Use for |
+|---------|-------------|-----------|---------|
+| `calm` | 1.0× | 0 | Taglines, demos |
+| `energetic` | 1.18× | +3 | Feature lists, reveals |
+| `urgent` | 1.28× | +5 | Hook lines |
+| `warm` | 0.95× | -1 | Onboarding, explainers |
+| `whisper` | 0.87× | -3 | Dramatic reveals |
+| `confident` | 1.09× | +2 | CTAs, stats |
+
+On Windows without Piper installed, SAPI kicks in automatically with emotion rate control — you get expressive voiceovers with zero setup.
 
 ---
 
@@ -363,6 +442,8 @@ export const colors = {
 };
 ```
 
+Note: when `/saas-promo-studio` runs, it auto-scans your Tailwind config and CSS variables to pre-fill these colours with your real brand palette.
+
 ### FFmpeg colour grading
 
 In `scripts/ffmpeg-pipeline.ts`:
@@ -402,21 +483,6 @@ Requirements: Python 3.10+, CUDA 12.1+, ~20GB VRAM (24GB recommended).
 
 ---
 
-## Voiceover fallback chain
-
-The skill automatically selects the best available TTS engine:
-
-| Priority | Engine | Quality | Requires |
-|----------|--------|---------|----------|
-| 1 | Piper TTS | Neural (best) | `pip install piper-tts` + model download |
-| 2 | macOS `say` | System voice | macOS only |
-| 3 | Windows SAPI | System voice | Windows built-in — zero install |
-| 4 | Silent placeholder | No audio | Always available |
-
-On Windows without Piper installed, SAPI kicks in automatically — you get voiceovers with zero setup.
-
----
-
 ## Troubleshooting
 
 **FFmpeg not found on Windows**
@@ -450,10 +516,14 @@ cd promo && npm install
 
 **Piper TTS fails on Windows**
 
-Windows SAPI fallback is used automatically. For Piper:
+Windows SAPI fallback is used automatically (with emotion control). For Piper:
 ```powershell
 .\install.ps1 -WithTTS
 ```
+
+**Environment check shows red items**
+
+Only Node.js 18+ is required. All other red items use fallbacks — your video will still render. Install the optional tools for better quality.
 
 ---
 
@@ -463,17 +533,25 @@ Windows SAPI fallback is used automatically. For Piper:
 /saas-promo-studio
        │
        ▼
-  Phase 1: Analyse repo
-  (reads package.json, routes, README)
+  Phase 0: Environment Check
+  (Node, FFmpeg, Python, Playwright status)
        │
        ▼
-  Phase 2: Write all files
+  Phase 1: Analyse repo + Brand Auto-Scan
+  (CSS colors, Tailwind config, logo, features)
+       │
+       ▼
+  Phase 1b: Choose Narrative Structure
+  (Rage Hook / Transformation / Social Proof Storm / etc.)
+       │
+       ▼
+  Phase 2–8: Write all files
   (scripts/, remotion/, templates/, prompts/)
        │
        ▼
 npm run promo
   ├── [1/6] capture.ts → Playwright screenshots
-  ├── [2/6] voiceover.ts → MP3 via Piper/SAPI/say
+  ├── [2/6] voiceover.ts → MP3 via Piper/SAPI/say (per-scene emotion)
   ├── [3/6] subtitles.ts → SRT via Whisper
   ├── [4/6] render.ts → Remotion → raw MP4
   ├── [5/6] ffmpeg-pipeline.ts → master MP4
@@ -493,5 +571,3 @@ The skill is a single `SKILL.md` file — all logic lives in the instructions Cl
 ## License
 
 MIT — use freely, modify, share.
-
-

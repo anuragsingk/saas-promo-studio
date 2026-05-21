@@ -11,22 +11,185 @@ Build a **complete, autonomous "AI SaaS Promo Video Studio"** inside the current
 
 ---
 
-## Phase 1: Repository Analysis
+## Phase 0: Environment Validation
+
+**Do this BEFORE writing any files.** Fast-fail with clear error messages so users fix issues before wasting time.
+
+Run these checks and print a clear status table:
+
+```
+╔══════════════════════════════════════════════════════╗
+║       SaaS Promo Studio — Environment Check          ║
+╠══════════════════════════════════════════════════════╣
+║  Node.js 18+        ✓ v20.11.0                       ║
+║  FFmpeg             ✓ found at /usr/bin/ffmpeg        ║
+║  Python 3.10+       ✓ v3.11.2  (optional)            ║
+║  Piper TTS          ✗ not found — SAPI/say fallback  ║
+║  Whisper            ✗ not found — placeholder subs   ║
+║  Playwright         ✓ installed                       ║
+╚══════════════════════════════════════════════════════╝
+```
+
+Check each:
+1. **Node.js** — `node --version`, must be 18+. If missing or too old: print download URL `https://nodejs.org` and EXIT.
+2. **FFmpeg** — try `ffmpeg -version`. Also search winget portable paths on Windows (see Phase 5). If missing: print install instructions for each OS, then continue (NOT fatal — placeholder video will be used).
+3. **Python 3.10+** — `python --version` or `python3 --version`. OPTIONAL — print "(optional)" if missing.
+4. **Piper TTS** — `python -c "import piper"` or `piper --version`. OPTIONAL — note which fallback will be used.
+5. **Whisper** — `python -c "import whisper"`. OPTIONAL — note placeholder subtitles will be used.
+6. **Playwright** — check if `node_modules/@playwright/test` exists or `playwright --version`. NOT fatal.
+
+Print a clear one-line summary: what will work, what will use fallbacks. Only EXIT if Node.js is missing or too old — everything else degrades gracefully.
+
+---
+
+## Phase 1: Repository Analysis + Brand Auto-Scan
 
 Read these files before writing anything:
 - `package.json`, `composer.json`, `README.md`, any config files
 - Route files to understand URL structure and user flows
 - `.env.example` for app URL / port hints
 
-Identify:
-- Product name and tagline
-- Primary colour palette (extract hex values)
-- Key user flows (auth → dashboard → core features)
-- "Wow moments" — features most impressive in a demo
-- Emotional selling points (time saved, pain eliminated)
-- Default app URL (check for `APP_URL`, `VITE_APP_URL`, or assume `http://localhost:8000`)
+### Brand Auto-Scan (run ALL of these)
 
-Write your findings to `promo/ANALYSIS.md` before generating any other files.
+**1. Color Extraction — scan CSS/Tailwind/PostCSS files:**
+```
+Look for: tailwind.config.js / tailwind.config.ts
+  → extract theme.extend.colors or theme.colors
+  → find primary/accent/brand keys
+  → grab their hex values
+
+Look for: *.css, *.scss, *.sass files
+  → scan for CSS variables: --primary, --accent, --brand, --color-*
+  → extract values like: #6B41F8, oklch(...), hsl(...)
+
+Look for: variables.css, tokens.css, design-tokens.ts
+  → common patterns: primaryColor, accentColor, brandColor
+
+Look for: resources/css/ (Laravel), styles/ (Next.js), src/styles/
+```
+
+**2. Logo Detection:**
+```
+Check these paths in order:
+  public/logo.svg, public/logo.png, public/favicon.svg
+  resources/images/logo.svg, assets/logo.png
+  src/assets/logo.*, static/logo.*
+→ Record the path if found. UICapture will use it as overlay.
+```
+
+**3. Product Name + Tagline:**
+```
+Check in order:
+  1. README.md — first H1 heading = product name, first paragraph = tagline
+  2. package.json → "name" and "description"
+  3. composer.json → "name" and "description"
+  4. .env.example → APP_NAME=...
+  5. config/app.php (Laravel) → 'name' => '...'
+  6. next.config.js → any title/name fields
+```
+
+**4. Feature Detection:**
+```
+Scan route files for key nouns:
+  routes/web.php (Laravel), app/Http/Controllers/ (Laravel)
+  pages/ or app/ (Next.js), views.py (Django)
+  → Extract controller/page names → map to feature names
+  → "DashboardController" → "Dashboard", "InvoiceController" → "Invoicing"
+```
+
+**5. Wow Moments (emotional selling points):**
+```
+Look in README.md and any marketing-adjacent files for:
+  - "Save X hours", "Reduce X by Y%", "X minutes instead of hours"
+  - Feature names that suggest time/money savings
+  - Integration lists (each integration = demo-worthy)
+```
+
+Write ALL findings to `promo/ANALYSIS.md` before generating any other files. Include:
+- Product name, tagline, brand colors (hex), logo path (if found), detected features, wow moments, assumed app URL.
+
+---
+
+## Phase 1b: Narrative Story Engine
+
+Before writing any Remotion code, **choose the best narrative structure** for the product based on:
+- Its pain point (is it fixing a frustrating manual process? → Rage Hook)
+- Its WOW factor (dramatic before/after? → Transformation)
+- Its social traction (customers, reviews, team size? → Social Proof Storm)
+- Its unique mechanism (AI/automation "magic"? → Whisper Reveal)
+
+### Named Narrative Structures
+
+**THE RAGE HOOK** (Best for: tools that fix a genuinely painful workflow)
+```
+Scene 1 [0–3s]:  FRUSTRATION — chaotic dashboard, red errors, someone overwhelmed
+Scene 2 [3–5s]:  SILENCE — screen goes black, single white word: "Enough."
+Scene 3 [5–9s]:  WHISPER — product name fades in softly with ambient sound
+Scene 4 [9–25s]: REVEAL — smooth demo of the solution in action
+Scene 5 [25–30s]: CTA — "Start free. No credit card."
+Tone: Dark → relief → aspirational. Pacing: slow-fast-slow.
+```
+
+**THE TRANSFORMATION** (Best for: before/after tools, productivity/efficiency apps)
+```
+Scene 1 [0–5s]:  BEFORE — show the old painful way (text list of pain points)
+Scene 2 [5–8s]:  PIVOT — wipe transition + "With [Product]:"
+Scene 3 [8–22s]: AFTER — split screen: old way (greyed out) vs new way (vivid)
+Scene 4 [22–27s]: PROOF — counter-up stat: "3.2x faster. 94% less manual work."
+Scene 5 [27–30s]: CTA — strong imperative: "Switch today."
+Tone: Empathetic → energetic → confident.
+```
+
+**THE SOCIAL PROOF STORM** (Best for: apps with users, reviews, or team adoption)
+```
+Scene 1 [0–4s]:  HOOK — "[X] teams switched this month"
+Scene 2 [4–12s]: STORM — rapid-cut 6 testimonial quotes (2s each), slight zoom each
+Scene 3 [12–20s]: DEMO — key feature in 8 seconds, no voiceover — let it breathe
+Scene 4 [20–26s]: NUMBERS — counter-up: users, reviews, countries
+Scene 5 [26–30s]: CTA — "Join them."
+Tone: Social momentum → FOMO → invitation.
+```
+
+**THE WHISPER REVEAL** (Best for: AI tools, "magic" automation, invisible-until-it-works)
+```
+Scene 1 [0–6s]:  QUESTION — white text on black: "What if your [problem] just... solved itself?"
+Scene 2 [6–12s]: MAGIC — slow zoom into UI, feature activates with a glow effect
+Scene 3 [12–22s]: PROOF — show output (report, email, plan) materialising
+Scene 4 [22–27s]: SIMPLICITY — "One click. Done."
+Scene 5 [27–30s]: CTA — "See the magic."
+Tone: Mysterious → wonder → clear value.
+```
+
+**THE PROBLEM AGITATOR** (Best for: compliance, security, ops tools)
+```
+Scene 1 [0–4s]:  STAT — scary industry statistic in huge type
+Scene 2 [4–8s]:  AGITATE — "Most teams don't find out until it's too late."
+Scene 3 [8–18s]: SOLUTION — product dashboard protecting them in real-time
+Scene 4 [18–25s]: REASSURANCE — "Always watching. So you don't have to."
+Scene 5 [25–30s]: CTA — "Get protected. Free trial."
+Tone: Alarming → tension → relief → safety.
+```
+
+**THE FOUNDER STORY** (Best for: indie SaaS, personal brand products)
+```
+Scene 1 [0–5s]:  ORIGIN — "I built this because I was tired of [pain]."
+Scene 2 [5–15s]: BUILD — montage-style: code editor → first user → growth chart
+Scene 3 [15–22s]: COMMUNITY — "Now [X] people use it every day."
+Scene 4 [22–28s]: INVITE — "It's your turn."
+Scene 5 [28–30s]: CTA — "Try it free."
+Tone: Authentic → humble → inspiring.
+```
+
+**THE SPEED RUN** (Best for: complex tools that need to prove simplicity)
+```
+Scene 1 [0–2s]:  CLAIM — "From zero to [result] in 60 seconds."
+Scene 2 [2–25s]: LIVE RUN — uncut or rapid-cut real workflow, timer overlay
+Scene 3 [25–28s]: RESULT — the output on screen
+Scene 4 [28–30s]: CTA — "You just watched it. Now try it."
+Tone: Confident → proof-by-doing → challenge.
+```
+
+Store the chosen narrative structure name in `ANALYSIS.md`. Reference it in `prompts/ad-scripts.md` and use the scene timing from it when generating Remotion compositions.
 
 ---
 
@@ -57,7 +220,8 @@ promo/
 │   ├── tsconfig.json         ← "strict": false, jsx: "react"
 │   ├── remotion.config.ts    ← Config.setVideoImageFormat + Config.setOverwriteOutput
 │   └── src/
-│       ├── Root.tsx          ← registerRoot() entry point with all 5 Compositions
+│       ├── index.ts          ← ENTRY POINT: registerRoot() only — auto-discovered by Remotion
+│       ├── Root.tsx          ← Pure component with all 5 Compositions — NO registerRoot
 │       ├── compositions/
 │       │   ├── LaunchVideo.tsx
 │       │   ├── TikTokAd.tsx
@@ -86,8 +250,8 @@ promo/
 │   ├── tiktok-ad.md
 │   └── onboarding.md
 ├── prompts/
-│   ├── hooks.md
-│   ├── ad-scripts.md
+│   ├── hooks.md              ← 20 hooks using all 7 narrative structures
+│   ├── ad-scripts.md         ← Full scripts for all 5 templates + chosen structure
 │   ├── cta-copy.md
 │   └── scene-ideas.md
 └── output/
@@ -400,16 +564,72 @@ Generate FLOWS based on the app's actual URL structure from ANALYSIS.md.
 
 ### scripts/voiceover.ts
 
+**Emotion/Energy per scene support:**
+
+Every voiceover call accepts an optional `emotion` parameter that controls delivery:
+
+```typescript
+export type VoiceEmotion = 'calm' | 'energetic' | 'urgent' | 'warm' | 'whisper' | 'confident';
+
+export interface VoiceoverOptions {
+  text: string;
+  outputPath: string;
+  emotion?: VoiceEmotion;  // default: 'calm'
+  speed?: number;           // 0.7–1.4 multiplier, default 1.0
+}
+```
+
+Emotion → Piper `--length-scale` mapping (length-scale controls speed; lower = faster):
+```
+calm:       length_scale = 1.0   (neutral, clear)
+energetic:  length_scale = 0.85  (faster, punchy)
+urgent:     length_scale = 0.78  (fast, driven)
+warm:       length_scale = 1.05  (slightly slower, friendly)
+whisper:    length_scale = 1.15  (slower, deliberate)
+confident:  length_scale = 0.92  (slightly faster, assertive)
+```
+
+Emotion → Windows SAPI rate mapping (rate: -10 to 10, default 0):
+```
+calm:       rate = 0
+energetic:  rate = 3
+urgent:     rate = 5
+warm:       rate = -1
+whisper:    rate = -3
+confident:  rate = 2
+```
+
 Three-tier fallback chain (try in order):
-1. **Piper TTS** (neural): `echo "text" | piper --model path.onnx --output_file out.wav`
+1. **Piper TTS** (neural): `echo "text" | piper --model path.onnx --length-scale 1.0 --output_file out.wav`
    - Model paths: Linux/Mac: `~/.local/share/piper-voices/en_US-lessac-high.onnx`
    - Windows: `%LOCALAPPDATA%\piper-voices\en_US-lessac-high.onnx`
-2. **macOS `say`** (if `process.platform === 'darwin'`): `say -o out.aiff "text"`
-3. **Windows SAPI** (if `process.platform === 'win32'`): PowerShell `System.Speech.Synthesis.SpeechSynthesizer`
+2. **macOS `say`** (if `process.platform === 'darwin'`): `say -r RATE -o out.aiff "text"` (rate: 150=calm, 180=energetic, 200=urgent, 140=warm, 130=whisper, 165=confident)
+3. **Windows SAPI** (if `process.platform === 'win32'`): PowerShell `System.Speech.Synthesis.SpeechSynthesizer` with `.Rate` property
 4. **Silent placeholder**: `ffmpeg -f lavfi -i anullsrc -t 30 out.mp3`
 
 Always convert WAV/AIFF → MP3 using FFmpeg after TTS renders.
 Use `ffprobe` to get audio duration for Remotion timing sync.
+
+**Voiceover script per template** — define `VOICEOVER_SCRIPTS` with emotion per scene:
+
+```typescript
+const VOICEOVER_SCRIPTS: Record<string, Array<{ text: string; emotion: VoiceEmotion; scene: string }>> = {
+  launch: [
+    { scene: 'hero',     text: 'Introducing [Product].', emotion: 'whisper' },
+    { scene: 'tagline',  text: '[Tagline] — built for teams who move fast.', emotion: 'confident' },
+    { scene: 'demo',     text: 'Everything you need in one place.', emotion: 'warm' },
+    { scene: 'features', text: '[Feature 1], [Feature 2], [Feature 3] — all working together.', emotion: 'energetic' },
+    { scene: 'cta',      text: 'Start free today. No credit card required.', emotion: 'calm' },
+  ],
+  tiktok: [
+    { scene: 'hook',    text: 'Stop wasting hours on [pain point].', emotion: 'urgent' },
+    { scene: 'problem', text: 'Most teams still do this manually. There is a better way.', emotion: 'warm' },
+    { scene: 'demo',    text: '[Product] does it in seconds.', emotion: 'energetic' },
+    { scene: 'cta',     text: 'Try it free. Link in bio.', emotion: 'confident' },
+  ],
+  // Generate equivalent for: onboarding, feature, startup
+};
+```
 
 ### scripts/subtitles.ts
 
@@ -477,6 +697,7 @@ import minimist = require('minimist');
 const argv = minimist(process.argv.slice(2));
 const config = {
   template:      argv.template || argv.t || 'launch',
+  duration:      parseInt(argv.duration || argv.d || '0', 10), // 30 | 60 | 90 | 0 (auto)
   skipCapture:   Boolean(argv['skip-capture'] || argv['no-capture']),
   skipVoiceover: Boolean(argv['skip-voice']   || argv['no-voice']),
   skipRender:    Boolean(argv['skip-render']  || argv['no-render']),
@@ -486,11 +707,19 @@ const config = {
 };
 ```
 
+**Duration flag** — when `--duration=30`, `--duration=60`, or `--duration=90` is passed:
+- Pass `durationSeconds: config.duration` as a prop to Remotion via the props JSON file
+- Each composition reads this prop and adapts its `durationInFrames` accordingly:
+  - 30s: `durationInFrames = 30 * 30 = 900`
+  - 60s: `durationInFrames = 60 * 30 = 1800`
+  - 90s: `durationInFrames = 90 * 30 = 2700`
+- Default (duration = 0): use each template's natural duration
+
 Pipeline steps (print numbered progress: [1/6], [2/6], etc.):
 1. Capture UI (unless `skipCapture`)
-2. Generate voiceover using script from `VOICEOVER_SCRIPTS[template]`
+2. Generate voiceover using script from `VOICEOVER_SCRIPTS[template]` with per-scene emotion
 3. Generate subtitles from audio
-4. Render Remotion composition
+4. Render Remotion composition (with duration prop if set)
 5. Composite video + audio + subtitles with FFmpeg
 6. Export social variants
 
@@ -512,6 +741,14 @@ Print ASCII banner at start. Print output paths at end. Print elapsed time.
 2. **All imports at TOP of file** — `import * as React from 'react'` must be first line in TSX files.
 
 3. **`gradients.ts`**: Import React at the TOP, not the bottom.
+
+4. **Duration-aware compositions** — all compositions accept an optional `durationSeconds` prop:
+   ```typescript
+   interface CompositionProps {
+     durationSeconds?: number; // 30 | 60 | 90 | undefined (use natural duration)
+   }
+   ```
+   Use `useVideoConfig()` to get actual `durationInFrames` — don't hardcode frame counts.
 
 ### remotion/src/motion/cinematicSpring.ts
 
@@ -566,6 +803,7 @@ Supports modes: `'fade' | 'slide-up' | 'scale-in' | 'scramble'`
 - Word-by-word animation (default) or char-by-char (`byChar`)
 - `gradient` prop: applies `linear-gradient(135deg, #6B41F8, #4361EE)` via `-webkit-background-clip: text`
 - `delay` prop: frame offset before animation starts
+- `emotion` prop: `'calm' | 'energetic' | 'urgent' | 'warm' | 'whisper' | 'confident'` — affects spring config (energetic/urgent = snappySpring, whisper = gentleSpring)
 - Each word gets staggered spring using `frame` captured at component top (no hook calls inside map)
 
 ### remotion/src/scenes/UICapture.tsx
@@ -660,17 +898,34 @@ const SEED_PARTICLES = Array.from({ length: 80 }, (_, i) => ({
 
 ## Phase 7: Marketing Content Files
 
-### prompts/hooks.md — 20 hook templates
-Pain, curiosity, social proof, and transformation hooks — customised for the actual product from ANALYSIS.md.
+### prompts/hooks.md — 20+ hook templates
+
+Generate hooks using ALL 7 narrative structures from Phase 1b. For each structure, write 2–3 hooks:
+- **Rage Hook style**: "I spent 6 hours on that report. Then I found [Product]."
+- **Transformation style**: "Before: 3 spreadsheets, 2 hours. After: 1 dashboard, 30 seconds."
+- **Social Proof Storm style**: "847 teams switched this month. Here's why."
+- **Whisper Reveal style**: "What if your [problem] just... disappeared?"
+- **Problem Agitator style**: "73% of teams miss this until it's too late."
+- **Founder Story style**: "I built [Product] because I was the person drowning in [pain]."
+- **Speed Run style**: "Zero to [result] in 60 seconds. Watch."
+
+Customise ALL hooks with the actual product name, pain points, and features from ANALYSIS.md.
 
 ### prompts/ad-scripts.md — Complete voiceover scripts for all 5 templates
-Lengths: 15s, 30s, 60s, 2min — natural spoken language, approx 150 words/minute.
+
+For each template, write scripts at multiple durations:
+- **15s** (TikTok): ~37 words — hook, one pain, solution, CTA
+- **30s**: ~75 words — hook, problem, demo moment, proof, CTA
+- **60s**: ~150 words — full narrative arc with chosen structure
+- **2min**: ~300 words — full onboarding walkthrough or feature tour
+
+Label each scene's emotion: `[EMOTION: urgent]`, `[EMOTION: warm]`, etc.
 
 ### prompts/cta-copy.md — CTA variants
 Urgency, social-proof, and benefit-led variants. At least 15 variations.
 
 ### templates/*.md — Scene-by-scene breakdowns
-Each template: timing markers, voiceover cue points, motion direction notes.
+Each template: timing markers, voiceover cue points, motion direction notes. Include the chosen narrative structure name.
 
 ---
 
@@ -680,8 +935,10 @@ Generate `promo/README.md` with:
 - 3-command quick start
 - All npm run commands table with descriptions
 - Skip flags: `--skip-capture`, `--skip-voice`, `--skip-render`, `--no-social`
+- Duration flag: `--duration=30`, `--duration=60`, `--duration=90`
 - How to add new Playwright flows to capture.ts
 - How to swap voice models
+- Narrative story structures: short description of all 7 structures with usage
 - FFmpeg color grading customisation
 - Output format reference table
 - LTX Video optional section
@@ -702,6 +959,10 @@ Generate `promo/README.md` with:
 9. **No BOM on Windows** — use `[System.IO.File]::WriteAllText` with `UTF8Encoding::new($false)` in PS1
 10. **Deterministic particles** — precompute seed array, never use `Math.random()` inside render functions
 11. **Remotion entry = `src/index.ts`** — Remotion auto-discovery only finds `src/index.ts` or `src/index.tsx`. Always create this thin file. `Root.tsx` is a pure component. `registerRoot` lives ONLY in `index.ts`. The `render.ts` entry point arg must point to `src/index.ts`, not `Root.tsx`.
+12. **Emotion per scene** — voiceover.ts must accept `emotion` parameter and map it to TTS speed/rate flags for Piper, macOS say, and Windows SAPI.
+13. **Phase 0 first** — always run environment validation before writing any files. Print a clear status table. Only exit on missing Node.js.
+14. **Brand auto-scan** — always scan for tailwind.config.js, CSS variables, logo files BEFORE generating colors in cinematicSpring.ts. Use real brand colors from the app.
+15. **Choose narrative structure** — always select the best narrative from Phase 1b based on the product type. Record the chosen structure name in ANALYSIS.md. All voiceover scripts must follow the chosen structure's scene ordering and tone.
 
 ---
 
@@ -709,7 +970,8 @@ Generate `promo/README.md` with:
 
 Before reporting done, verify every item:
 
-- [ ] `promo/ANALYSIS.md` — product analysis written with real data from the repo
+- [ ] **Phase 0**: Environment validation ran and printed status table
+- [ ] `promo/ANALYSIS.md` — product analysis written with real data + chosen narrative structure + brand colors from scan
 - [ ] `promo/package.json` — valid JSON with all deps including `minimist`, `dotenv`, `@types/fluent-ffmpeg`
 - [ ] `promo/tsconfig.json` — root tsconfig for scripts compilation
 - [ ] `promo/install.sh` — idempotent Unix installer
@@ -717,11 +979,11 @@ Before reporting done, verify every item:
 - [ ] `promo/.env` — env template with correct default APP_URL from analysis
 - [ ] `promo/scripts/analyze.ts` — exports `getProductName`, `getTagline`, `getFeatures`, `getHooks`, `getColors`
 - [ ] `promo/scripts/capture.ts` — has app reachability check + placeholder manifest fallback
-- [ ] `promo/scripts/voiceover.ts` — Piper → say → SAPI → silent fallback chain
+- [ ] `promo/scripts/voiceover.ts` — Piper → say → SAPI → silent fallback chain + `emotion` param with speed/rate mapping
 - [ ] `promo/scripts/subtitles.ts` — Whisper with placeholder fallback
 - [ ] `promo/scripts/ffmpeg-pipeline.ts` — `findFfmpeg()` with winget path search
 - [ ] `promo/scripts/render.ts` — `findFfmpeg()` + temp props file + `cwd: REMOTION_DIR`
-- [ ] `promo/scripts/promo.ts` — `minimist` args + 6-step pipeline + ASCII banner
+- [ ] `promo/scripts/promo.ts` — `minimist` args + `--duration` flag + 6-step pipeline + ASCII banner
 - [ ] `promo/scripts/social.ts` — finds latest master video, calls `exportSocialVariants`
 - [ ] `promo/scripts/ltx-generate.ts` — GPU/LTX detection + Python script generation
 - [ ] `remotion/package.json` — Remotion sub-project deps
@@ -729,27 +991,27 @@ Before reporting done, verify every item:
 - [ ] `remotion/remotion.config.ts` — `setVideoImageFormat` + `setOverwriteOutput`
 - [ ] `remotion/src/index.ts` — thin entry file: `import { registerRoot } from 'remotion'; import { RemotionRoot } from './Root'; registerRoot(RemotionRoot);`
 - [ ] `remotion/src/Root.tsx` — pure component exporting `RemotionRoot` with all 5 Compositions — NO `registerRoot` call
-- [ ] `remotion/src/motion/cinematicSpring.ts` — 3 spring configs + colors + gradients
+- [ ] `remotion/src/motion/cinematicSpring.ts` — 3 spring configs + colors (from brand scan) + gradients
 - [ ] `remotion/src/motion/gradients.ts` — React import at TOP
 - [ ] `remotion/src/motion/cursorHighlight.tsx` — cursor dot + glow ring + click ripple
 - [ ] `remotion/src/motion/focusZoom.tsx` — spring scale + vignette overlay
 - [ ] `remotion/src/motion/particles.tsx` — deterministic seed array + ParticleBurst component
-- [ ] `remotion/src/scenes/KineticText.tsx` — fade/slide-up/scale-in/scramble modes, NO hooks in map
+- [ ] `remotion/src/scenes/KineticText.tsx` — fade/slide-up/scale-in/scramble modes + `emotion` prop, NO hooks in map
 - [ ] `remotion/src/scenes/Hero.tsx` — logo + badge + KineticText subtitle
 - [ ] `remotion/src/scenes/FeatureShowcase.tsx` — 3-column grid, staggered cards, NO hooks in map
 - [ ] `remotion/src/scenes/UICapture.tsx` — browser chrome + screenshot/placeholder + cursor + label
 - [ ] `remotion/src/scenes/CTA.tsx` — headline + subtext + glowing button + particle burst
 - [ ] `remotion/src/scenes/Transition.tsx` — wipe/cross-dissolve/scale-punch modes
-- [ ] `remotion/src/compositions/LaunchVideo.tsx` — 6 scenes via `<Sequence>`
+- [ ] `remotion/src/compositions/LaunchVideo.tsx` — 6 scenes via `<Sequence>`, follows chosen narrative structure
 - [ ] `remotion/src/compositions/TikTokAd.tsx` — 4 scenes, 9:16 aware
 - [ ] `remotion/src/compositions/OnboardingDemo.tsx` — 8 steps + CTA, NO hooks in map
 - [ ] `remotion/src/compositions/FeatureReveal.tsx` — 4 features × 6s, NO hooks in map
 - [ ] `remotion/src/compositions/StartupPromo.tsx` — CountUp + split-screen + CTA
-- [ ] `promo/prompts/hooks.md` — 20 product-specific hooks
-- [ ] `promo/prompts/ad-scripts.md` — scripts for all 5 templates
+- [ ] `promo/prompts/hooks.md` — 20+ hooks using all 7 narrative structures
+- [ ] `promo/prompts/ad-scripts.md` — scripts for all 5 templates at 15s/30s/60s/2min with emotion labels
 - [ ] `promo/prompts/cta-copy.md` — 15+ CTA variants
-- [ ] `promo/templates/*.md` — 4 template breakdowns
-- [ ] `promo/README.md` — quick start + all commands + customisation guide
+- [ ] `promo/templates/*.md` — 4 template breakdowns with chosen narrative structure noted
+- [ ] `promo/README.md` — quick start + all commands + duration flag + narrative structures guide
 - [ ] `remotion/public/captures/` directory exists
 - [ ] `remotion/public/audio/` directory exists
 - [ ] `promo/output/renders/` directory exists
@@ -759,6 +1021,9 @@ After all files are created, print:
 
 ```
 ✓ SaaS Promo Studio built in promo/
+  Narrative structure: [CHOSEN_STRUCTURE_NAME]
+  Brand colors: [PRIMARY_HEX] / [ACCENT_HEX]
+  Logo found: [YES/NO — path if yes]
 
 Next steps:
   1. Update promo/.env with your app URL and credentials
@@ -766,6 +1031,10 @@ Next steps:
   3. cd promo && node -e "require('child_process').execSync('powershell -ExecutionPolicy Bypass -File install.ps1',{stdio:'inherit'})"
      (or: bash install.sh on Mac/Linux)
   4. npm run promo
+
+Flags:
+  npm run promo -- --template=tiktok --duration=30
+  npm run promo -- --skip-capture --skip-voice   (re-render only)
 
 Output will be saved to:
   promo/output/renders/   ← master video
