@@ -463,6 +463,4 @@ The skill is a single `SKILL.md` file — all logic lives in the instructions Cl
 
 MIT — use freely, modify, share.
 
----
 
-Built with [Claude Code](https://claude.ai/claude-code) · Powered by Remotion, Playwright, FFmpeg, Piper TTS
