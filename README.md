@@ -55,22 +55,24 @@ Restart Claude Code → the skill is ready. No other installs needed at this poi
 
 Drop this skill into Claude Code, open any SaaS project, and type `/saas-promo-studio`. Claude will:
 
-1. **Validate your environment** — checks Node.js, FFmpeg, Python, Playwright upfront and prints a clear status table. Fast-fails only if Node.js is missing; everything else degrades gracefully.
+1. **Validate your environment** — checks Node.js, FFmpeg, Python, Playwright + all API keys upfront. Prints a clear status table.
 2. **Analyse your app** — reads your codebase, identifies features, user flows, selling points, and brand colours
-3. **Auto-scan your brand** — extracts real hex colours from Tailwind config, CSS variables, design tokens; detects your logo file
+3. **Auto-scan your brand** — Brandfetch API → Tailwind config → CSS variables → logo file detection
 4. **Choose a narrative structure** — picks the best storytelling arc (Rage Hook, Transformation, Social Proof Storm, etc.) for your product type
 5. **Build the entire video system** — generates every file from scratch inside a `promo/` folder
-6. **Record your UI** — Playwright screenshots and videos of your actual running app
-7. **Generate voiceovers** — Piper TTS (neural) with per-scene emotion control, macOS `say`, or Windows SAPI fallback
-8. **Auto-subtitle** — Whisper transcription → SRT → burned into video
-9. **Render cinematic video** — Remotion React compositions with spring animations
-10. **Export all social formats** — YouTube, TikTok, Instagram, Twitter via FFmpeg
+6. **Record your UI** — Playwright screenshots saved directly to Remotion's public folder — **actually used in videos**
+7. **Fetch stock footage** — Pexels API (free) for B-roll and background clips
+8. **Generate voiceovers** — ElevenLabs → OpenAI → Google → Piper → SAPI/say → silent (6-tier chain, per-scene emotion)
+9. **Generate background music** — Mubert AI → Pixabay (both free tiers) → mixed at -18dB under voice
+10. **Auto-subtitle** — Whisper transcription → SRT → burned into video
+11. **Render cinematic video** — Remotion React compositions with spring animations, using your real UI screenshots
+12. **Export all social formats** — YouTube, TikTok, Instagram, Twitter via FFmpeg
 
 **Output**: master MP4 + 4 platform-sized social variants, ready to post.
 
 ---
 
-## Tech stack
+## Tech stack — Core (zero API keys required)
 
 | Tool | Role | License |
 |------|------|---------|
@@ -81,7 +83,71 @@ Drop this skill into Claude Code, open any SaaS project, and type `/saas-promo-s
 | [Whisper](https://github.com/openai/whisper) | Auto-subtitles from audio | MIT |
 | [LTX Video](https://github.com/Lightricks/LTX-Video) | AI-generated video clips (GPU, optional) | Apache 2.0 |
 
-**No API keys. No subscriptions. Runs fully offline.**
+**Works 100% offline with zero API keys. Add optional keys to unlock better quality.**
+
+---
+
+## Freemium API Integrations
+
+Every API below has a **free tier**. Add the key to `promo/.env` — the skill auto-detects it and upgrades that pipeline step automatically. No key = graceful fallback.
+
+### Voice / TTS
+
+| Service | Free Tier | What you get | Key |
+|---------|-----------|--------------|-----|
+| [ElevenLabs](https://elevenlabs.io) | **10,000 chars/month** | Best quality, 6 emotion modes, 1000s of voices | `ELEVENLABS_API_KEY` |
+| [OpenAI TTS](https://platform.openai.com/docs/guides/text-to-speech) | **Free credits for new accounts** | Excellent quality, 6 voices, speed control | `OPENAI_API_KEY` |
+| [Google Cloud TTS](https://cloud.google.com/text-to-speech/pricing) | **4M chars/month** (standard), 1M Neural2 | Good quality, many voices | `GOOGLE_TTS_API_KEY` |
+| Piper TTS | **Free forever** (local) | Offline neural voice | `pip install piper-tts` |
+| macOS `say` | **Free** (built-in) | System voice | No key needed |
+| Windows SAPI | **Free** (built-in) | System voice + emotion rate | No key needed |
+
+### AI Video Generation
+
+| Service | Free Tier | What you get | Key |
+|---------|-----------|--------------|-----|
+| [Runway ML](https://runwayml.com) | **125 credits/month** (~5–10 clips) | Gen-3 Alpha video from text/image | `RUNWAY_API_KEY` |
+| [FAL.ai](https://fal.ai) | **Freemium** ($0.025 per 5s clip) | Fast video generation, multiple models | `FAL_API_KEY` |
+| [Stability AI](https://platform.stability.ai) | **25 free credits** | AI backgrounds + still images | `STABILITY_API_KEY` |
+| Local LTX Video | **Free** (needs NVIDIA GPU) | Offline AI video, ~20GB VRAM | `pip install ltx-video` |
+
+### Stock Footage & Photos
+
+| Service | Free Tier | What you get | Key |
+|---------|-----------|--------------|-----|
+| [Pexels](https://www.pexels.com/api) | **Unlimited** (free) | HD stock footage + photos, no attribution | `PEXELS_API_KEY` |
+| [Pixabay](https://pixabay.com/api/docs) | **Unlimited** (free) | Stock video + photos + music | No key (or get one for more results) |
+
+### Background Music
+
+| Service | Free Tier | What you get | Key |
+|---------|-----------|--------------|-----|
+| [Mubert](https://mubert.com/render/pricing) | **Freemium** | AI-generated music matched to mood | `MUBERT_API_KEY` |
+| Pixabay Music | **Free** | Royalty-free tracks by genre | No key needed |
+
+### Brand Detection
+
+| Service | Free Tier | What you get | Key |
+|---------|-----------|--------------|-----|
+| [Brandfetch](https://developers.brandfetch.com) | **10,000 req/month** | Official brand colors + logos by domain | `BRANDFETCH_API_KEY` |
+
+### AI Copy & Analysis
+
+| Service | Free Tier | What you get | Key |
+|---------|-----------|--------------|-----|
+| [OpenAI GPT-4o mini](https://platform.openai.com) | **Free credits** for new accounts | Better product analysis, smarter hooks | `OPENAI_API_KEY` (same key as TTS) |
+
+---
+
+### Which keys to get first?
+
+**Priority order** (biggest quality uplift per 5 minutes of effort):
+
+1. **`PEXELS_API_KEY`** — takes 30 seconds, completely free, huge visual upgrade
+2. **`ELEVENLABS_API_KEY`** — takes 2 minutes, free 10k chars/month, voice quality jumps dramatically
+3. **`BRANDFETCH_API_KEY`** — takes 2 minutes, free 10k req/month, auto-fills your real brand colors
+4. **`OPENAI_API_KEY`** — if you already have one, unlocks both TTS and smarter analysis
+5. **`RUNWAY_API_KEY`** — only needed if you want AI-generated B-roll scenes
 
 ---
 
@@ -200,19 +266,21 @@ Your video is saved to `promo/output/renders/` with social variants in `promo/ou
 
 | Command | What it does |
 |---------|-------------|
-| `npm run promo` | Full pipeline — capture → voice → subtitles → render → composite → social |
+| `npm run promo` | Full 7-step pipeline — capture → stock → music → voice → subtitles → render → social |
 | `npm run launch-video` | 60s Apple-style launch video |
 | `npm run tiktok` | 15s TikTok / Instagram Reels ad (9:16) |
 | `npm run onboarding` | 2-minute product walkthrough (8 steps) |
 | `npm run feature` | Feature reveal — 4 features × 6s |
 | `npm run startup` | 45s Stripe/Arc-style startup promo |
-| `npm run capture` | Playwright UI capture only |
-| `npm run voiceover` | Generate voiceovers only |
+| `npm run capture` | Playwright UI capture only (saves real screenshots to Remotion) |
+| `npm run voiceover` | Generate voiceovers only (ElevenLabs/OpenAI/Piper/SAPI) |
+| `npm run music` | Generate background music only (Mubert/Pixabay) |
+| `npm run stock` | Fetch stock footage only (Pexels) |
 | `npm run subtitles` | Generate subtitles from audio |
-| `npm run render` | Remotion render only |
+| `npm run render` | Remotion render only (uses captured screenshots automatically) |
 | `npm run social` | Export social format variants only |
 | `npm run remotion:studio` | Open Remotion visual editor in browser |
-| `npm run analyze` | Re-run product analysis |
+| `npm run analyze` | Re-run product analysis (GPT-4o enhanced if OPENAI_API_KEY set) |
 
 ### Template flag
 ```bash
@@ -359,18 +427,49 @@ promo/
 
 ## Environment variables
 
-Create `promo/.env`:
+`promo/.env` — generated automatically when you run `/saas-promo-studio`:
 
 ```env
-# Required — URL where your app is running during Playwright capture
+# ── Required ──────────────────────────────────────────────
 PROMO_APP_URL=http://localhost:8000
-
-# Optional — login credentials for Playwright to authenticate
 PROMO_EMAIL=admin@yourorg.test
 PROMO_PASSWORD=yourpassword
+
+# ── TTS / Voice (uncomment + add key to unlock) ───────────
+# ElevenLabs: free 10k chars/month → https://elevenlabs.io
+# ELEVENLABS_API_KEY=
+# ELEVENLABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL   # Sarah (free voice)
+
+# OpenAI TTS + GPT analysis → https://platform.openai.com
+# OPENAI_API_KEY=
+
+# Google Cloud TTS: free 4M chars/month
+# GOOGLE_TTS_API_KEY=
+
+# ── AI Video Generation ───────────────────────────────────
+# Runway ML Gen-3: free 125 credits/month → https://runwayml.com
+# RUNWAY_API_KEY=
+
+# FAL.ai: freemium → https://fal.ai
+# FAL_API_KEY=
+
+# Stability AI: free 25 credits → https://platform.stability.ai
+# STABILITY_API_KEY=
+
+# ── Stock Assets (free) ───────────────────────────────────
+# Pexels: unlimited free → https://www.pexels.com/api
+# PEXELS_API_KEY=
+
+# ── Background Music ──────────────────────────────────────
+# Mubert: freemium → https://mubert.com
+# MUBERT_API_KEY=
+
+# ── Brand Auto-Detect (free 10k req/month) ────────────────
+# Brandfetch → https://developers.brandfetch.com
+# BRANDFETCH_API_KEY=
 ```
 
-If `PROMO_APP_URL` is unreachable when you run `npm run promo`, capture is skipped gracefully — the system creates a placeholder manifest and renders with mock UI instead of crashing.
+If `PROMO_APP_URL` is unreachable, capture is skipped gracefully — placeholder manifest is created and videos render with mock UI instead of crashing.
 
 ---
 
@@ -533,12 +632,12 @@ Only Node.js 18+ is required. All other red items use fallbacks — your video w
 /saas-promo-studio
        │
        ▼
-  Phase 0: Environment Check
-  (Node, FFmpeg, Python, Playwright status)
+  Phase 0: Environment + API Key Check
+  (Node, FFmpeg, Python, Playwright + all API keys → status table)
        │
        ▼
   Phase 1: Analyse repo + Brand Auto-Scan
-  (CSS colors, Tailwind config, logo, features)
+  (Brandfetch API → Tailwind → CSS vars → logo detection)
        │
        ▼
   Phase 1b: Choose Narrative Structure
@@ -550,12 +649,26 @@ Only Node.js 18+ is required. All other red items use fallbacks — your video w
        │
        ▼
 npm run promo
-  ├── [1/6] capture.ts → Playwright screenshots
-  ├── [2/6] voiceover.ts → MP3 via Piper/SAPI/say (per-scene emotion)
-  ├── [3/6] subtitles.ts → SRT via Whisper
-  ├── [4/6] render.ts → Remotion → raw MP4
-  ├── [5/6] ffmpeg-pipeline.ts → master MP4
-  └── [6/6] social.ts → 4 platform variants
+  ├── [1/7] capture.ts   → Playwright screenshots → remotion/public/captures/
+  │                         writes captures.json with relative paths for staticFile()
+  ├── [2/7] stock.ts     → Pexels B-roll → remotion/public/stock/ (if PEXELS_API_KEY)
+  ├── [3/7] music.ts     → Mubert/Pixabay music → remotion/public/music/bg.mp3
+  ├── [4/7] voiceover.ts → ElevenLabs→OpenAI→Google→Piper→SAPI→silent (per-scene emotion)
+  ├── [5/7] subtitles.ts → SRT via Whisper (or placeholder)
+  ├── [6/7] render.ts    → reads captures.json → passes as props → Remotion → raw MP4
+  │                         UICapture uses staticFile(screenshotPath) for real screenshots
+  └── [7/7] social.ts    → FFmpeg → 4 platform variants + music mix
+```
+
+### Screenshot Pipeline (how your real UI gets into the video)
+
+```
+Playwright saves:  remotion/public/captures/01-dashboard.png
+Manifest records:  { "path": "captures/01-dashboard.png" }  ← relative to public/
+render.ts reads:   captures.json → merges into Remotion props
+Composition uses:  captures.find(c => c.name.includes('dashboard'))?.path
+UICapture shows:   <Img src={staticFile("captures/01-dashboard.png")} />
+Result:            Your actual app UI appears in the video — not a mock
 ```
 
 ---
