@@ -6,6 +6,22 @@ One command. Full pipeline. Cinematic output.
 
 ---
 
+## Install in one command
+
+**Mac / Linux**
+```bash
+curl -fsSL https://raw.githubusercontent.com/anuragsingk/saas-promo-studio/main/install.sh | bash
+```
+
+**Windows (PowerShell)**
+```powershell
+irm https://raw.githubusercontent.com/anuragsingk/saas-promo-studio/main/install.ps1 | iex
+```
+
+Then restart Claude Code and type `/saas-promo-studio` inside any SaaS project.
+
+---
+
 ## What it does
 
 Drop this skill into Claude Code, open any SaaS project, and type `/saas-promo-studio`. Claude will:
@@ -48,37 +64,33 @@ Drop this skill into Claude Code, open any SaaS project, and type `/saas-promo-s
 
 ## Installation
 
-### Step 1 — Install the skill
+### Option A — One-liner (recommended, no git needed)
 
 **Mac / Linux**
 ```bash
-git clone https://github.com/anurag989719/saas-promo-studio-skill \
-  ~/.claude/skills/saas-promo-studio
+curl -fsSL https://raw.githubusercontent.com/anuragsingk/saas-promo-studio/main/install.sh | bash
 ```
 
 **Windows (PowerShell)**
 ```powershell
-git clone https://github.com/anurag989719/saas-promo-studio-skill `
-  "$env:USERPROFILE\.claude\skills\saas-promo-studio"
+irm https://raw.githubusercontent.com/anuragsingk/saas-promo-studio/main/install.ps1 | iex
 ```
 
-Or paste the one-liner — no git needed:
+### Option B — Git clone
 
 **Mac / Linux**
 ```bash
-mkdir -p ~/.claude/skills/saas-promo-studio
-curl -fsSL https://raw.githubusercontent.com/anurag989719/saas-promo-studio-skill/main/SKILL.md \
-  -o ~/.claude/skills/saas-promo-studio/SKILL.md
+git clone https://github.com/anuragsingk/saas-promo-studio \
+  ~/.claude/skills/saas-promo-studio
 ```
 
 **Windows**
 ```powershell
-New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills\saas-promo-studio"
-Invoke-WebRequest "https://raw.githubusercontent.com/anurag989719/saas-promo-studio-skill/main/SKILL.md" `
-  -OutFile "$env:USERPROFILE\.claude\skills\saas-promo-studio\SKILL.md"
+git clone https://github.com/anuragsingk/saas-promo-studio `
+  "$env:USERPROFILE\.claude\skills\saas-promo-studio"
 ```
 
-### Step 2 — Restart Claude Code
+### After installing — restart Claude Code
 
 Close and reopen Claude Code. The skill appears automatically — no config needed.
 
